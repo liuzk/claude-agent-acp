@@ -229,6 +229,7 @@ const ALLOW_BYPASS = !IS_ROOT || !!process.env.IS_SANDBOX;
 
 const PERMISSION_MODE_ALIASES: Record<string, PermissionMode> = {
   default: "default",
+  ask: "default",
   acceptedits: "acceptEdits",
   dontask: "dontAsk",
   plan: "plan",
@@ -1526,12 +1527,13 @@ async function getAvailableModels(
   models: ModelInfo[],
   settingsManager: SettingsManager,
 ): Promise<SessionModelState> {
-  const settings = settingsManager.getSettings();
+  const modelSettings = settingsManager.getModelSettings();
 
   let currentModel = models[0];
 
-  if (settings.model) {
-    const match = resolveModelPreference(models, settings.model);
+  // 使用新的模型配置系统
+  if (modelSettings.name) {
+    const match = resolveModelPreference(models, modelSettings.name);
     if (match) {
       currentModel = match;
     }
@@ -1544,6 +1546,10 @@ async function getAvailableModels(
       modelId: model.value,
       name: model.displayName,
       description: model.description,
+      // 添加模型参数信息到描述中
+      ...(model.value === currentModel.value && {
+        description: `${model.description || ''} (temp: ${modelSettings.temperature}, maxTokens: ${modelSettings.maxTokens})`.trim(),
+      }),
     })),
     currentModelId: currentModel.value,
   };

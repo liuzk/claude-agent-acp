@@ -1,0 +1,101 @@
+{
+  "$schema": "./settings.schema.json",
+  "version": "1.0.0",
+  "model": {
+    "name": "kimi-k2.5",
+    "provider": "moonshot",
+    "temperature": 0.7,
+    "maxTokens": 4096,
+    "topP": 1.0,
+    "contextWindow": 256000,
+    "displayName": "Kimi K2.5",
+    "description": "月之暗面 Kimi K2.5 - 支持长文本和图片理解",
+    "capabilities": {
+      "vision": true,
+      "functionCalling": true,
+      "streaming": true,
+      "longContext": true,
+      "maxContextLength": 256000
+    }
+  },
+  "permissions": {
+    "defaultMode": "ask",
+    "autoApprove": ["Read", "Glob", "Grep"],
+    "requireConfirmation": ["Bash", "Write", "Edit"]
+  },
+  "ui": {
+    "theme": "auto",
+    "language": "zh-CN",
+    "fontSize": 14,
+    "lineHeight": 1.5,
+    "fontFamily": "JetBrains Mono, Fira Code, monospace",
+    "showLineNumbers": true,
+    "wordWrap": true
+  },
+  "tools": {
+    "timeout": 60000,
+    "disallowedTools": [],
+    "bash": {
+      "allowedCommands": [],
+      "blockedCommands": ["rm -rf /", "rm -rf /*"],
+      "defaultCwd": null
+    },
+    "files": {
+      "maxSize": 1048576,
+      "blockedExtensions": [".exe", ".dll", ".so", ".dylib"]
+    }
+  },
+  "files": {
+    "excludePatterns": [
+      "node_modules/**",
+      ".git/**",
+      "dist/**",
+      "build/**",
+      ".next/**",
+      "*.min.js",
+      "*.min.css"
+    ],
+    "includePatterns": [],
+    "search": {
+      "maxResults": 100,
+      "caseSensitive": false,
+      "useRegex": false,
+      "includeHidden": false
+    },
+    "indexing": {
+      "enabled": true,
+      "excludeDirs": ["node_modules", ".git", "dist", "build"],
+      "maxFiles": 10000
+    }
+  },
+  "behavior": {
+    "autoSave": true,
+    "autoSaveInterval": 30000,
+    "formatOnSave": true,
+    "formatters": {
+      "typescript": "prettier",
+      "javascript": "prettier",
+      "json": "prettier"
+    },
+    "enableSuggestions": true,
+    "enableCompletion": true,
+    "enableSemanticSearch": true
+  },
+  "keybindings": {
+    "bindings": {
+      "sendMessage": "Enter",
+      "newLine": "Shift+Enter",
+      "cancel": "Escape"
+    }
+  },
+  "session": {
+    "defaultTitle": "新会话",
+    "maxHistoryMessages": 100,
+    "enableResume": true,
+    "savePath": ".claude/sessions"
+  },
+  "mcp": {
+    "servers": []
+  },
+  "env": {}
+}
