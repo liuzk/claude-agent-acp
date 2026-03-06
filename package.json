@@ -3,8 +3,8 @@
   "publishConfig": {
     "access": "public"
   },
-  "version": "0.20.2",
-  "description": "An ACP-compatible coding agent powered by the Claude Agent SDK (TypeScript)",
+  "version": "lzk",
+  "description": "基于 Claude Agent SDK 的 ACP 兼容编码智能体（TypeScript）",
   "main": "dist/lib.js",
   "types": "dist/lib.d.ts",
   "bin": {

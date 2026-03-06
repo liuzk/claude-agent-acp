@@ -243,22 +243,22 @@ export function resolvePermissionMode(defaultMode?: unknown): PermissionMode {
   }
 
   if (typeof defaultMode !== "string") {
-    throw new Error("Invalid permissions.defaultMode: expected a string.");
+    throw new Error("无效的 permissions.defaultMode：预期为字符串。");
   }
 
   const normalized = defaultMode.trim().toLowerCase();
   if (normalized === "") {
-    throw new Error("Invalid permissions.defaultMode: expected a non-empty string.");
+    throw new Error("无效的 permissions.defaultMode：预期为非空字符串。");
   }
 
   const mapped = PERMISSION_MODE_ALIASES[normalized];
   if (!mapped) {
-    throw new Error(`Invalid permissions.defaultMode: ${defaultMode}.`);
+    throw new Error(`无效的 permissions.defaultMode：${defaultMode}。`);
   }
 
   if (mapped === "bypassPermissions" && !ALLOW_BYPASS) {
     throw new Error(
-      "Invalid permissions.defaultMode: bypassPermissions is not available when running as root.",
+      "无效的 permissions.defaultMode：以 root 身份运行时不可使用 bypassPermissions。",
     );
   }
 
@@ -289,8 +289,8 @@ export class ClaudeAcpAgent implements Agent {
 
     // Default authMethod
     const authMethod: any = {
-      description: "Run `claude /login` in the terminal",
-      name: "Log in with Claude",
+      description: "在终端中运行 `claude /login`",
+      name: "使用 Claude 登录",
       id: "claude-login",
     };
 
@@ -301,8 +301,8 @@ export class ClaudeAcpAgent implements Agent {
 
     const gatewayAuthMethod: AuthMethod = {
       id: "gateway",
-      name: "Custom model gateway",
-      description: "Use a custom gateway to authenticate and access models",
+      name: "自定义模型网关",
+      description: "使用自定义网关进行认证和访问模型",
       _meta: {
         gateway: {
           protocol: "anthropic",
@@ -329,7 +329,7 @@ export class ClaudeAcpAgent implements Agent {
         "terminal-auth": {
           command,
           args,
-          label: "Claude Login",
+          label: "Claude 登录",
         },
       };
     }
@@ -359,7 +359,7 @@ export class ClaudeAcpAgent implements Agent {
       },
       agentInfo: {
         name: packageJson.name,
-        title: "Claude Agent",
+        title: "Claude 智能体",
         version: packageJson.version,
       },
       authMethods: [
@@ -476,13 +476,13 @@ export class ClaudeAcpAgent implements Agent {
       this.gatewayAuthMeta = _params._meta as GatewayAuthMeta | undefined;
       return;
     }
-    throw new Error("Method not implemented.");
+    throw new Error("方法未实现");
   }
 
   async prompt(params: PromptRequest): Promise<PromptResponse> {
     const session = this.sessions[params.sessionId];
     if (!session) {
-      throw new Error("Session not found");
+      throw new Error("会话未找到");
     }
 
     session.cancelled = false;
@@ -537,7 +537,7 @@ export class ClaudeAcpAgent implements Agent {
                     sessionId: message.session_id,
                     update: {
                       sessionUpdate: "agent_message_chunk",
-                      content: { type: "text", text: "Compacting..." },
+                      content: { type: "text", text: "正在压缩..." },
                     },
                   });
                 }
@@ -551,7 +551,7 @@ export class ClaudeAcpAgent implements Agent {
                   sessionId: message.session_id,
                   update: {
                     sessionUpdate: "agent_message_chunk",
-                    content: { type: "text", text: "\n\nCompacting completed." },
+                    content: { type: "text", text: "\n\n压缩完成。" },
                   },
                 });
                 break;
@@ -798,7 +798,7 @@ export class ClaudeAcpAgent implements Agent {
             break;
         }
       }
-      throw new Error("Session did not end in result");
+      throw new Error("会话未正常结束");
     } catch (error) {
       if (error instanceof RequestError || !(error instanceof Error)) {
         throw error;
@@ -811,12 +811,12 @@ export class ClaudeAcpAgent implements Agent {
         message.includes("process terminated by signal") ||
         message.includes("Failed to write to process stdin")
       ) {
-        this.logger.error(`Session ${params.sessionId}: Claude Agent process died: ${message}`);
+        this.logger.error(`会话 ${params.sessionId}：Claude Agent 进程已终止：${message}`);
         session.input.end();
         delete this.sessions[params.sessionId];
         throw RequestError.internalError(
           undefined,
-          "The Claude Agent process exited unexpectedly. Please start a new session.",
+          "Claude Agent 进程意外退出，请开始一个新会话。",
         );
       }
       throw error;
@@ -842,7 +842,7 @@ export class ClaudeAcpAgent implements Agent {
   async cancel(params: CancelNotification): Promise<void> {
     const session = this.sessions[params.sessionId];
     if (!session) {
-      throw new Error("Session not found");
+      throw new Error("会话未找到");
     }
     session.cancelled = true;
     for (const [, pending] of session.pendingMessages) {
@@ -856,15 +856,17 @@ export class ClaudeAcpAgent implements Agent {
     params: SetSessionModelRequest,
   ): Promise<SetSessionModelResponse | void> {
     if (!this.sessions[params.sessionId]) {
-      throw new Error("Session not found");
+      throw new Error("会话未找到");
     }
-    await this.sessions[params.sessionId].query.setModel(params.modelId);
+    // 如果选择的是 default，实际使用 kimi-k2.5
+    const actualModelValue = params.modelId === "default" ? "kimi-k2.5" : params.modelId;
+    await this.sessions[params.sessionId].query.setModel(actualModelValue);
     await this.updateConfigOption(params.sessionId, "model", params.modelId);
   }
 
   async setSessionMode(params: SetSessionModeRequest): Promise<SetSessionModeResponse> {
     if (!this.sessions[params.sessionId]) {
-      throw new Error("Session not found");
+      throw new Error("会话未找到");
     }
 
     await this.applySessionMode(params.sessionId, params.modeId);
@@ -877,7 +879,7 @@ export class ClaudeAcpAgent implements Agent {
   ): Promise<SetSessionConfigOptionResponse> {
     const session = this.sessions[params.sessionId];
     if (!session) {
-      throw new Error("Session not found");
+      throw new Error("会话未找到");
     }
 
     const option = session.configOptions.find((o) => o.id === params.configId);
@@ -904,7 +906,9 @@ export class ClaudeAcpAgent implements Agent {
         },
       });
     } else if (params.configId === "model") {
-      await this.sessions[params.sessionId].query.setModel(params.value);
+      // 如果选择的是 default，实际使用 kimi-k2.5
+      const actualModelValue = params.value === "default" ? "kimi-k2.5" : params.value;
+      await this.sessions[params.sessionId].query.setModel(actualModelValue);
     }
 
     session.configOptions = session.configOptions.map((o) =>
@@ -923,7 +927,7 @@ export class ClaudeAcpAgent implements Agent {
       case "plan":
         break;
       default:
-        throw new Error("Invalid Mode");
+        throw new Error("无效模式");
     }
     this.sessions[sessionId].permissionMode = modeId;
     try {
@@ -936,7 +940,7 @@ export class ClaudeAcpAgent implements Agent {
         throw error;
       } else {
         // eslint-disable-next-line preserve-caught-error
-        throw new Error("Invalid Mode");
+        throw new Error("无效模式");
       }
     }
   }
@@ -989,11 +993,11 @@ export class ClaudeAcpAgent implements Agent {
           options: [
             {
               kind: "allow_always",
-              name: "Yes, and auto-accept edits",
+              name: "是，自动接受编辑",
               optionId: "acceptEdits",
             },
-            { kind: "allow_once", name: "Yes, and manually approve edits", optionId: "default" },
-            { kind: "reject_once", name: "No, keep planning", optionId: "plan" },
+            { kind: "allow_once", name: "是，手动批准编辑", optionId: "default" },
+            { kind: "reject_once", name: "否，继续规划", optionId: "plan" },
           ],
           sessionId,
           toolCall: {
@@ -1007,7 +1011,7 @@ export class ClaudeAcpAgent implements Agent {
         });
 
         if (signal.aborted || response.outcome?.outcome === "cancelled") {
-          throw new Error("Tool use aborted");
+          throw new Error("工具使用已中止");
         }
         if (
           response.outcome?.outcome === "selected" &&
@@ -1053,11 +1057,11 @@ export class ClaudeAcpAgent implements Agent {
         options: [
           {
             kind: "allow_always",
-            name: "Always Allow",
-            optionId: "allow_always",
-          },
-          { kind: "allow_once", name: "Allow", optionId: "allow" },
-          { kind: "reject_once", name: "Reject", optionId: "reject" },
+            name: "始终允许",
+              optionId: "alwaysAllow",
+            },
+            { kind: "allow_once", name: "允许", optionId: "allow" },
+            { kind: "reject_once", name: "拒绝", optionId: "reject" },
         ],
         sessionId,
         toolCall: {
@@ -1070,7 +1074,7 @@ export class ClaudeAcpAgent implements Agent {
         },
       });
       if (signal.aborted || response.outcome?.outcome === "cancelled") {
-        throw new Error("Tool use aborted");
+        throw new Error("工具使用已中止");
       }
       if (
         response.outcome?.outcome === "selected" &&
@@ -1306,7 +1310,7 @@ export class ClaudeAcpAgent implements Agent {
     // Handle abort controller from meta options
     const abortController = userProvidedOptions?.abortController;
     if (abortController?.signal.aborted) {
-      throw new Error("Cancelled");
+      throw new Error("已取消");
     }
 
     const q = query({
@@ -1331,7 +1335,7 @@ export class ClaudeAcpAgent implements Agent {
     if (shouldHideClaudeAuth() && initializationResult.account.subscriptionType) {
       throw RequestError.authRequired(
         undefined,
-        "This integration does not support using claude.ai subscriptions.",
+        "此集成不支持使用 claude.ai 订阅。",
       );
     }
 
@@ -1340,31 +1344,31 @@ export class ClaudeAcpAgent implements Agent {
     const availableModes = [
       {
         id: "default",
-        name: "Default",
-        description: "Standard behavior, prompts for dangerous operations",
+        name: "默认",
+        description: "标准行为，危险操作时提示",
       },
       {
         id: "acceptEdits",
-        name: "Accept Edits",
-        description: "Auto-accept file edit operations",
+        name: "接受编辑",
+        description: "自动接受文件编辑操作",
       },
       {
         id: "plan",
-        name: "Plan Mode",
-        description: "Planning mode, no actual tool execution",
+        name: "规划模式",
+        description: "规划模式，不实际执行工具",
       },
       {
         id: "dontAsk",
-        name: "Don't Ask",
-        description: "Don't prompt for permissions, deny if not pre-approved",
+        name: "不询问",
+        description: "不提示权限，未预先批准则拒绝",
       },
     ];
     // Only works in non-root mode
     if (ALLOW_BYPASS) {
       availableModes.push({
         id: "bypassPermissions",
-        name: "Bypass Permissions",
-        description: "Bypass all permission checks",
+        name: "绕过权限",
+        description: "绕过所有权限检查",
       });
     }
 
@@ -1422,8 +1426,8 @@ function buildConfigOptions(
   return [
     {
       id: "mode",
-      name: "Mode",
-      description: "Session permission mode",
+      name: "模式",
+      description: "会话权限模式",
       category: "mode",
       type: "select",
       currentValue: modes.currentModeId,
@@ -1435,8 +1439,8 @@ function buildConfigOptions(
     },
     {
       id: "model",
-      name: "Model",
-      description: "AI model to use",
+      name: "模型",
+      description: "使用的 AI 模型",
       category: "model",
       type: "select",
       currentValue: models.currentModelId,
@@ -1529,20 +1533,55 @@ async function getAvailableModels(
 ): Promise<SessionModelState> {
   const modelSettings = settingsManager.getModelSettings();
 
-  let currentModel = models[0];
+  // 添加中国模型到列表
+  const chineseModels: ModelInfo[] = [
+    {
+      value: "default",
+      displayName: "默认（推荐）",
+      description: "使用默认模型（Kimi K2.5）",
+    },
+    {
+      value: "kimi-k2.5",
+      displayName: "Kimi K2.5",
+      description: "月之暗面 Kimi K2.5 - 支持长文本和图片理解",
+    },
+    {
+      value: "qwen3.5-plus",
+      displayName: "通义千问 3.5 Plus",
+      description: "阿里云通义千问 3.5 Plus - 支持图片理解",
+    },
+    {
+      value: "glm-5",
+      displayName: "GLM-5",
+      description: "智谱 GLM-5 - 强大的中文大模型",
+    },
+    {
+      value: "MiniMax-M2.5",
+      displayName: "MiniMax M2.5",
+      description: "MiniMax M2.5 - 高效的多模态模型",
+    },
+  ];
+
+  // 只使用中国模型，过滤掉国外模型
+  const allModels = chineseModels;
+
+  // 默认使用第一个模型（默认推荐），如果用户配置了特定模型则使用配置的模型
+  let currentModel = allModels[0];
 
   // 使用新的模型配置系统
   if (modelSettings.name) {
-    const match = resolveModelPreference(models, modelSettings.name);
+    const match = resolveModelPreference(allModels, modelSettings.name);
     if (match) {
       currentModel = match;
     }
   }
 
-  await query.setModel(currentModel.value);
+  // 如果选择的是 default，实际使用 kimi-k2.5
+  const actualModelValue = currentModel.value === "default" ? "kimi-k2.5" : currentModel.value;
+  await query.setModel(actualModelValue);
 
   return {
-    availableModels: models.map((model) => ({
+    availableModels: allModels.map((model) => ({
       modelId: model.value,
       name: model.displayName,
       description: model.description,
@@ -1800,7 +1839,7 @@ export function toAcpNotifications(
                   });
                 } else {
                   logger.error(
-                    `[claude-agent-acp] Got a tool response for tool use that wasn't tracked: ${toolUseId}`,
+                    `[claude-agent-acp] 收到未跟踪的工具使用的工具响应：${toolUseId}`,
                   );
                 }
               },
@@ -1863,7 +1902,7 @@ export function toAcpNotifications(
         const toolUse = toolUseCache[chunk.tool_use_id];
         if (!toolUse) {
           logger.error(
-            `[claude-agent-acp] Got a tool result for tool use that wasn't tracked: ${chunk.tool_use_id}`,
+            `[claude-agent-acp] 收到未跟踪的工具使用的工具结果：${chunk.tool_use_id}`,
           );
           break;
         }

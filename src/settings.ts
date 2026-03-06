@@ -703,13 +703,13 @@ export class SettingsManager {
           });
 
           watcher.on("error", (error) => {
-            this.logger.error(`Settings watcher error for ${filePath}:`, error);
+            this.logger.error(`设置监视器错误 ${filePath}：`, error);
           });
 
           this.watchers.push(watcher);
         }
       } catch (error) {
-        this.logger.error(`Failed to set up watcher for ${filePath}:`, error);
+        this.logger.error(`无法为 ${filePath} 设置监视器：`, error);
       }
     }
   }
@@ -728,7 +728,7 @@ export class SettingsManager {
         await this.loadAllSettings();
         this.onChange?.();
       } catch (error) {
-        this.logger.error("Failed to reload settings:", error);
+        this.logger.error("重新加载设置失败：", error);
       }
     }, 100);
   }
@@ -882,7 +882,7 @@ export class SettingsManager {
       // 重新加载设置
       await this.loadAllSettings();
     } catch (error) {
-      this.logger.error("Failed to save project settings:", error);
+      this.logger.error("保存项目设置失败：", error);
       throw error;
     }
   }
@@ -910,7 +910,7 @@ export class SettingsManager {
       // 重新加载设置
       await this.loadAllSettings();
     } catch (error) {
-      this.logger.error("Failed to save user settings:", error);
+      this.logger.error("保存用户设置失败：", error);
       throw error;
     }
   }

@@ -83,7 +83,7 @@ export function unreachable(value: never, logger: Logger = console) {
   } catch {
     valueAsString = value;
   }
-  logger.error(`Unexpected case: ${valueAsString}`);
+  logger.error(`意外情况：${valueAsString}`);
 }
 
 export function sleep(time: number): Promise<void> {

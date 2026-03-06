@@ -113,7 +113,7 @@ export function toolInfoFromToolUse(
     case "Task": {
       const input = toolUse.input as AgentInput | BashInput;
       return {
-        title: input?.description ? input.description : "Task",
+        title: input?.description ? input.description : "任务",
         kind: "think",
         content:
           input && "prompt" in input
@@ -130,7 +130,7 @@ export function toolInfoFromToolUse(
     case "Bash": {
       const input = toolUse.input as BashInput;
       return {
-        title: input?.command ? input.command : "Terminal",
+        title: input?.command ? input.command : "终端",
         kind: "execute",
         content: supportsTerminalOutput
           ? [{ type: "terminal" as const, terminalId: toolUse.id }]
@@ -154,7 +154,7 @@ export function toolInfoFromToolUse(
         limit = " (from line " + input.offset + ")";
       }
       return {
-        title: "Read " + (input.file_path ?? "File") + limit,
+        title: "读取 " + (input.file_path ?? "文件") + limit,
         kind: "read",
         locations: input.file_path
           ? [
@@ -189,7 +189,7 @@ export function toolInfoFromToolUse(
         ];
       }
       return {
-        title: input?.file_path ? `Write ${input.file_path}` : "Write",
+        title: input?.file_path ? `写入 ${input.file_path}` : "写入",
         kind: "edit",
         content,
         locations: input?.file_path ? [{ path: input.file_path }] : [],
@@ -210,7 +210,7 @@ export function toolInfoFromToolUse(
         ];
       }
       return {
-        title: input?.file_path ? `Edit ${input.file_path}` : "Edit",
+        title: input?.file_path ? `编辑 ${input.file_path}` : "编辑",
         kind: "edit",
         content,
         locations: input?.file_path ? [{ path: input.file_path }] : [],
@@ -219,7 +219,7 @@ export function toolInfoFromToolUse(
 
     case "Glob": {
       const input = toolUse.input as GlobInput;
-      let label = "Find";
+      let label = "查找";
       if (input.path) {
         label += ` \`${input.path}\``;
       }
@@ -236,7 +236,7 @@ export function toolInfoFromToolUse(
 
     case "Grep": {
       const input = toolUse.input as GrepInput;
-      let label = "grep";
+      let label = "搜索";
 
       if (input["-i"]) {
         label += " -i";
@@ -303,7 +303,7 @@ export function toolInfoFromToolUse(
     case "WebFetch": {
       const input = toolUse.input as WebFetchInput;
       return {
-        title: input?.url ? `Fetch ${input.url}` : "Fetch",
+        title: input?.url ? `获取 ${input.url}` : "获取网页",
         kind: "fetch",
         content:
           input && input.prompt
@@ -322,11 +322,11 @@ export function toolInfoFromToolUse(
       let label = `"${input.query}"`;
 
       if (input.allowed_domains && input.allowed_domains.length > 0) {
-        label += ` (allowed: ${input.allowed_domains.join(", ")})`;
+        label += ` (允许: ${input.allowed_domains.join(", ")})`;
       }
 
       if (input.blocked_domains && input.blocked_domains.length > 0) {
-        label += ` (blocked: ${input.blocked_domains.join(", ")})`;
+        label += ` (阻止: ${input.blocked_domains.join(", ")})`;
       }
 
       return {
@@ -340,8 +340,8 @@ export function toolInfoFromToolUse(
       const input = toolUse.input as TodoWriteInput;
       return {
         title: Array.isArray(input?.todos)
-          ? `Update TODOs: ${input.todos.map((todo: any) => todo.content).join(", ")}`
-          : "Update TODOs",
+          ? `更新待办: ${input.todos.map((todo: any) => todo.content).join(", ")}`
+          : "更新待办",
         kind: "think",
         content: [],
       };
@@ -349,7 +349,7 @@ export function toolInfoFromToolUse(
 
     case "ExitPlanMode": {
       return {
-        title: "Ready to code?",
+        title: "准备开始编码？",
         kind: "switch_mode",
         content: [],
       };
@@ -364,7 +364,7 @@ export function toolInfoFromToolUse(
         output = typeof input === "string" ? input : "{}";
       }
       return {
-        title: name || "Unknown Tool",
+        title: name || "未知工具",
         kind: "other",
         content: [
           {
@@ -380,7 +380,7 @@ export function toolInfoFromToolUse(
 
     default:
       return {
-        title: name || "Unknown Tool",
+        title: name || "未知工具",
         kind: "other",
         content: [],
       };
@@ -516,7 +516,7 @@ export function toolUpdateFromToolResult(
     }
 
     case "ExitPlanMode": {
-      return { title: "Exited Plan Mode" };
+      return { title: "已退出规划模式" };
     }
 
     default: {
@@ -766,7 +766,7 @@ export const createPostToolUseHook =
           await onPostToolUseHook(toolUseID, input.tool_input, input.tool_response);
           delete toolUseCallbacks[toolUseID]; // Cleanup after execution
         } else {
-          logger.error(`No onPostToolUseHook found for tool use ID: ${toolUseID}`);
+          logger.error(`未找到工具使用 ID 的 onPostToolUseHook：${toolUseID}`);
           delete toolUseCallbacks[toolUseID];
         }
       }

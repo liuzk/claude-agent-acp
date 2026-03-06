@@ -3,8 +3,12 @@
 // Load managed settings and apply environment variables
 import { loadManagedSettings, applyEnvironmentSettings } from "./utils.js";
 import { runAcp } from "./acp-agent.js";
+import packageJson from "../package.json" with { type: "json" };
 
-if (process.argv.includes("--cli")) {
+if (process.argv.includes("--version") || process.argv.includes("-v")) {
+  console.log(packageJson.version);
+  process.exit(0);
+} else if (process.argv.includes("--cli")) {
   process.argv = process.argv.filter((arg) => arg !== "--cli");
   // @ts-expect-error -- no types
   await import("@anthropic-ai/claude-agent-sdk/cli.js");
@@ -22,7 +26,7 @@ if (process.argv.includes("--cli")) {
   console.debug = console.error;
 
   process.on("unhandledRejection", (reason, promise) => {
-    console.error("Unhandled Rejection at:", promise, "reason:", reason);
+    console.error("未处理的 Promise 拒绝：", promise, "原因：", reason);
   });
 
   runAcp();
