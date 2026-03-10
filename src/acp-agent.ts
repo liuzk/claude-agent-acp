@@ -1078,10 +1078,10 @@ export class ClaudeAcpAgent implements Agent {
       }
       if (
         response.outcome?.outcome === "selected" &&
-        (response.outcome.optionId === "allow" || response.outcome.optionId === "allow_always")
+        (response.outcome.optionId === "allow" || response.outcome.optionId === "alwaysAllow")
       ) {
         // If Claude Code has suggestions, it will update their settings already
-        if (response.outcome.optionId === "allow_always") {
+        if (response.outcome.optionId === "alwaysAllow") {
           return {
             behavior: "allow",
             updatedInput: toolInput,
